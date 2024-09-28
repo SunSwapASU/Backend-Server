@@ -37,7 +37,7 @@ func main() {
 	s = fiber.New()
 
 	s.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://127.0.0.1:5500",
+		AllowOrigins:     os.Getenv("ALLOWED_ORIGINS"),
 		AllowCredentials: true,
 	}))
 

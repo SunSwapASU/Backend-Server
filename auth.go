@@ -17,21 +17,29 @@ func registerUser(c *fiber.Ctx) error {
 
 	err := json.Unmarshal(c.Body(), &creds)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "JSON unmarshal threw error"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "JSON unmarshal threw error",
+		})
 	}
 
 	registeredUser, err := dbclient.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
 	).Exec(ctx)
 	if registeredUser != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "A user with this email address already exists"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "A user with this email address already exists",
+		})
 	} else if err != nil && !errors.Is(err, db.ErrNotFound) {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database threw error while finding registering user"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Database threw error while finding registering user",
+		})
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(creds.Password), 14)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Password could not be hashed"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Password could not be hashed",
+		})
 	}
 
 	_, err = dbclient.User.CreateOne(
@@ -40,10 +48,14 @@ func registerUser(c *fiber.Ctx) error {
 		db.User.Password.Set(string(passwordHash)),
 	).Exec(ctx)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Could not create user in database"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not create user in database",
+		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "User registered successfully"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "User registered successfully",
+	})
 }
 
 func loginUser(c *fiber.Ctx) error {
@@ -51,21 +63,29 @@ func loginUser(c *fiber.Ctx) error {
 
 	err := json.Unmarshal(c.Body(), &creds)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "JSON unmarshal threw error"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "JSON unmarshal threw error",
+		})
 	}
 
 	user, err := dbclient.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
 	).Exec(ctx)
 	if errors.Is(err, fiber.ErrNotFound) {
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Incorrect email address or password",
+		})
 	} else if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database threw error while finding login user"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Database threw error while finding login user",
+		})
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
 	if err != nil {
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Incorrect email address or password",
+		})
 	}
 
 	JWTclaims := jwt.MapClaims{
@@ -77,14 +97,23 @@ func loginUser(c *fiber.Ctx) error {
 
 	signedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Could not sign JWT"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not sign JWT",
+		})
 	}
 
-	// c.ClearCookie("auth")
 	c.Cookie(&fiber.Cookie{
-		Name:  "auth",
+		Name:  "token",
 		Value: signedToken,
 	})
 
-	return c.JSON(fiber.Map{"auth": signedToken})
+	return c.JSON(fiber.Map{"token": signedToken})
+}
+
+func logoutUser(c *fiber.Ctx) error {
+	c.ClearCookie("token")
+
+	return c.JSON(fiber.Map{
+		"message": "User logged out successfully",
+	})
 }

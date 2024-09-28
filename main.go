@@ -43,10 +43,16 @@ func main() {
 
 	s.Post("/register", registerUser)
 	s.Post("/login", loginUser)
+	s.Post("/logout", logoutUser)
 
 	s.Use(jwtware.New(jwtware.Config{
 		SigningKey:  jwtware.SigningKey{Key: []byte(os.Getenv("JWT_SECRET"))},
-		TokenLookup: "cookie:auth",
+		TokenLookup: "cookie:token",
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": err.Error(),
+			})
+		},
 	}))
 
 	s.Get("/restricted", restricted)

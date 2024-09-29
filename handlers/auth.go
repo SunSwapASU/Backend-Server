@@ -73,7 +73,7 @@ func LoginUser(c *fiber.Ctx) error {
 	user, err := prisma.Client.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
 	).Exec(prisma.Ctx)
-	if errors.Is(err, fiber.ErrNotFound) {
+	if errors.Is(err, db.ErrNotFound) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Incorrect email address or password",
 		})

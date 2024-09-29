@@ -13,8 +13,8 @@ var (
 )
 
 func Connect() {
-	// init db
 	Client = db.NewClient()
+
 	if err := Client.Prisma.Connect(); err != nil {
 		log.Fatal(err)
 	}

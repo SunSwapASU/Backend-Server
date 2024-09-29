@@ -16,7 +16,14 @@ var s *fiber.App
 func Run() {
 	prisma.Connect()
 
-	// init fiber
+	defer func() {
+		if err := prisma.Client.Disconnect(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	////////////////////////////////////////////////////////////////
+
 	s = fiber.New()
 
 	jwtCheck := jwtware.New(jwtware.Config{
@@ -34,6 +41,8 @@ func Run() {
 		AllowCredentials: true,
 	}))
 
+	////////////////////////////////////////////////////////////////
+
 	privateRoutes := s.Group("/private", jwtCheck)
 	privateRoutes.Get("/browse", handlers.Browse)
 
@@ -41,6 +50,8 @@ func Run() {
 	publicRoutes.Post("/register", handlers.RegisterUser)
 	publicRoutes.Post("/login", handlers.LoginUser)
 	publicRoutes.Post("/logout", handlers.LogoutUser)
+
+	////////////////////////////////////////////////////////////////
 
 	s.All("*", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusNotFound)

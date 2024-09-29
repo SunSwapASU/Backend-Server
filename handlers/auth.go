@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,14 +6,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/branogarbo/sunswap_backend/models"
+	"github.com/branogarbo/sunswap_backend/prisma"
 	"github.com/branogarbo/sunswap_backend/prisma/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func registerUser(c *fiber.Ctx) error {
-	var creds Creds
+func RegisterUser(c *fiber.Ctx) error {
+	var creds models.Creds
 
 	err := json.Unmarshal(c.Body(), &creds)
 	if err != nil {
@@ -22,9 +24,9 @@ func registerUser(c *fiber.Ctx) error {
 		})
 	}
 
-	registeredUser, err := dbclient.User.FindUnique(
+	registeredUser, err := prisma.Client.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
-	).Exec(ctx)
+	).Exec(prisma.Ctx)
 	if registeredUser != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "A user with this email address already exists",
@@ -42,11 +44,11 @@ func registerUser(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = dbclient.User.CreateOne(
+	_, err = prisma.Client.User.CreateOne(
 		db.User.Username.Set(creds.Username),
 		db.User.Email.Set(creds.Email),
 		db.User.Password.Set(string(passwordHash)),
-	).Exec(ctx)
+	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Could not create user in database",
@@ -58,8 +60,8 @@ func registerUser(c *fiber.Ctx) error {
 	})
 }
 
-func loginUser(c *fiber.Ctx) error {
-	var creds Creds
+func LoginUser(c *fiber.Ctx) error {
+	var creds models.Creds
 
 	err := json.Unmarshal(c.Body(), &creds)
 	if err != nil {
@@ -68,9 +70,9 @@ func loginUser(c *fiber.Ctx) error {
 		})
 	}
 
-	user, err := dbclient.User.FindUnique(
+	user, err := prisma.Client.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
-	).Exec(ctx)
+	).Exec(prisma.Ctx)
 	if errors.Is(err, fiber.ErrNotFound) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Incorrect email address or password",
@@ -110,7 +112,7 @@ func loginUser(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"token": signedToken})
 }
 
-func logoutUser(c *fiber.Ctx) error {
+func LogoutUser(c *fiber.Ctx) error {
 	c.ClearCookie("token")
 
 	return c.JSON(fiber.Map{

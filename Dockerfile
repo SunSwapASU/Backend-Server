@@ -15,7 +15,7 @@
 # EXPOSE 3000
 
 
-FROM golang:alpine as builder
+FROM golang:alpine AS builder
 WORKDIR /workspace
 
 # add go modules lockfiles

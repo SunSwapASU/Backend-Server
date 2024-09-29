@@ -1,4 +1,4 @@
-package main
+package models
 
 type Creds struct {
 	Username string `json:"username"`

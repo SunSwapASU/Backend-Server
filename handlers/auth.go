@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
+	"net/mail"
 	"os"
 	"time"
 
@@ -15,12 +15,17 @@ import (
 )
 
 func RegisterUser(c *fiber.Ctx) error {
-	var creds models.Creds
+	var creds models.RegisterCreds
 
-	err := json.Unmarshal(c.Body(), &creds)
-	if err != nil {
+	if err := c.BodyParser(&creds); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "JSON unmarshal threw error",
+			"message": "Request body parser threw error",
+		})
+	}
+
+	if _, err := mail.ParseAddress(creds.Email); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Email address is not valid",
 		})
 	}
 
@@ -61,12 +66,11 @@ func RegisterUser(c *fiber.Ctx) error {
 }
 
 func LoginUser(c *fiber.Ctx) error {
-	var creds models.Creds
+	var creds models.LoginCreds
 
-	err := json.Unmarshal(c.Body(), &creds)
-	if err != nil {
+	if err := c.BodyParser(&creds); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "JSON unmarshal threw error",
+			"message": "Request body parser threw error",
 		})
 	}
 
@@ -91,7 +95,7 @@ func LoginUser(c *fiber.Ctx) error {
 	}
 
 	JWTclaims := jwt.MapClaims{
-		"username": creds.Username,
+		"username": user.Username,
 		"exp":      time.Now().Add(time.Hour * 72).Unix(),
 	}
 
@@ -109,10 +113,18 @@ func LoginUser(c *fiber.Ctx) error {
 		Value: signedToken,
 	})
 
-	return c.JSON(fiber.Map{"token": signedToken})
+	return c.JSON(fiber.Map{
+		"message": "User logged in successfully",
+	})
 }
 
 func LogoutUser(c *fiber.Ctx) error {
+	// if c.Cookies("token") == "" {
+	// 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+	// 		"message": "User is not logged in",
+	// 	})
+	// }
+
 	c.ClearCookie("token")
 
 	return c.JSON(fiber.Map{

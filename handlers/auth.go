@@ -76,6 +76,8 @@ func LoginUser(c *fiber.Ctx) error {
 
 	user, err := prisma.Client.User.FindUnique(
 		db.User.Email.Equals(creds.Email),
+	).With(
+		db.User.Items.Fetch(),
 	).Exec(prisma.Ctx)
 	if errors.Is(err, db.ErrNotFound) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -94,8 +96,18 @@ func LoginUser(c *fiber.Ctx) error {
 		})
 	}
 
+	itemsJSON, err := c.App().Config().JSONEncoder(user.Items())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not encode user items to JSON",
+		})
+	}
+
 	JWTclaims := jwt.MapClaims{
+		"userId":   user.ID,
 		"username": user.Username,
+		"email":    user.Email,
+		"items":    string(itemsJSON),
 		"exp":      time.Now().Add(time.Hour * 72).Unix(),
 	}
 

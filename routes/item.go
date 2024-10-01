@@ -6,7 +6,7 @@ import (
 )
 
 func itemRoutes(r fiber.Router) {
-	r.Get("/create", handlers.CreateItem)
+	r.Post("/create", handlers.CreateItem)
 	r.Get("/get", handlers.GetItem)
 	r.Get("/getAll", handlers.GetAllItems)
 	r.Post("/update", handlers.UpdateItem)

@@ -6,7 +6,7 @@ import (
 )
 
 func categoryRoutes(r fiber.Router) {
-	r.Get("/create", handlers.CreateCategory)
+	r.Post("/create", handlers.CreateCategory)
 	r.Get("/get", handlers.GetCategory)
 	r.Get("/getAll", handlers.GetAllCategories)
 	r.Post("/update", handlers.UpdateCategory)

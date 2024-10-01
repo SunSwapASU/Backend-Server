@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/branogarbo/sunswap_backend/handlers"
 	"github.com/branogarbo/sunswap_backend/prisma"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
@@ -43,34 +42,13 @@ func Run() {
 
 	////////////////////////////////////////////////////////////////
 
-	privateRoutes := s.Group("/private", jwtCheck)
+	s.Route("/auth", authRoutes)
 
-	creators := privateRoutes.Group("/create")
-	creators.Post("/item", handlers.CreateItem)
-	creators.Post("/category", handlers.CreateCategory)
+	p := s.Group("/private", jwtCheck)
 
-	readers := privateRoutes.Group("/read")
-	readers.Get("/user", handlers.GetUser)
-	readers.Get("/users", handlers.GetAllUsers)
-	readers.Get("/item", handlers.GetItem)
-	readers.Get("/items", handlers.GetAllItems)
-	readers.Get("/category", handlers.GetCategory)
-	readers.Get("/categories", handlers.GetAllCategories)
-
-	updaters := privateRoutes.Group("/update")
-	updaters.Post("/user", handlers.UpdateUser)
-	updaters.Post("/item", handlers.UpdateItem)
-	updaters.Post("/category", handlers.UpdateCategory)
-
-	deleters := privateRoutes.Group("/delete")
-	deleters.Delete("/user", handlers.DeleteUser)
-	deleters.Delete("/item", handlers.DeleteItem)
-	deleters.Delete("/category", handlers.DeleteCategory)
-
-	authRoutes := s.Group("/auth")
-	authRoutes.Post("/register", handlers.RegisterUser)
-	authRoutes.Post("/login", handlers.LoginUser)
-	authRoutes.Post("/logout", handlers.LogoutUser)
+	p.Route("/user", userRoutes)
+	p.Route("/item", itemRoutes)
+	p.Route("/category", categoryRoutes)
 
 	////////////////////////////////////////////////////////////////
 

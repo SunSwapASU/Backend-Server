@@ -1,31 +1,54 @@
 package handlers
 
 import (
+	"github.com/branogarbo/sunswap_backend/models"
+	"github.com/branogarbo/sunswap_backend/prisma"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
-func CreateUser(c *fiber.Ctx) error {
-	return nil
-}
-
 func UpdateUser(c *fiber.Ctx) error {
+	var search models.UserSearch
+
+	if err := c.BodyParser(&search); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Request body parser threw error",
+		})
+	}
+
 	return nil
 }
 
 func GetUser(c *fiber.Ctx) error {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
+	var search models.UserSearch
 
-	username := claims["username"].(string)
+	if err := c.BodyParser(&search); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Request body parser threw error",
+		})
+	}
 
-	return c.JSON(fiber.Map{"message": "Welcome " + username})
-}
-
-func GetAllUsers(c *fiber.Ctx) error {
 	return nil
 }
 
+func GetAllUsers(c *fiber.Ctx) error {
+	users, err := prisma.Client.User.FindMany().Exec(prisma.Ctx)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Database threw error while finding users",
+		})
+	}
+
+	return c.JSON(users)
+}
+
 func DeleteUser(c *fiber.Ctx) error {
+	var search models.UserSearch
+
+	if err := c.BodyParser(&search); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Request body parser threw error",
+		})
+	}
+
 	return nil
 }

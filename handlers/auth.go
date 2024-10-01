@@ -119,13 +119,10 @@ func LoginUser(c *fiber.Ctx) error {
 }
 
 func LogoutUser(c *fiber.Ctx) error {
-	// if c.Cookies("token") == "" {
-	// 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-	// 		"message": "User is not logged in",
-	// 	})
-	// }
-
-	c.ClearCookie("token")
+	c.Cookie(&fiber.Cookie{
+		Name:  "token",
+		Value: "",
+	})
 
 	return c.JSON(fiber.Map{
 		"message": "User logged out successfully",

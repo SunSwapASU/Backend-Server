@@ -43,16 +43,13 @@ func Run() {
 
 	////////////////////////////////////////////////////////////////
 
-	authRoutes := s.Group("/auth")
 	privateRoutes := s.Group("/private", jwtCheck)
-	creators := privateRoutes.Group("/create")
-	readers := privateRoutes.Group("/read")
-	updaters := privateRoutes.Group("/update")
-	deleters := privateRoutes.Group("/delete")
 
+	creators := privateRoutes.Group("/create")
 	creators.Post("/item", handlers.CreateItem)
 	creators.Post("/category", handlers.CreateCategory)
 
+	readers := privateRoutes.Group("/read")
 	readers.Get("/user", handlers.GetUser)
 	readers.Get("/users", handlers.GetAllUsers)
 	readers.Get("/item", handlers.GetItem)
@@ -60,14 +57,17 @@ func Run() {
 	readers.Get("/category", handlers.GetCategory)
 	readers.Get("/categories", handlers.GetAllCategories)
 
+	updaters := privateRoutes.Group("/update")
 	updaters.Post("/user", handlers.UpdateUser)
 	updaters.Post("/item", handlers.UpdateItem)
 	updaters.Post("/category", handlers.UpdateCategory)
 
+	deleters := privateRoutes.Group("/delete")
 	deleters.Delete("/user", handlers.DeleteUser)
 	deleters.Delete("/item", handlers.DeleteItem)
 	deleters.Delete("/category", handlers.DeleteCategory)
 
+	authRoutes := s.Group("/auth")
 	authRoutes.Post("/register", handlers.RegisterUser)
 	authRoutes.Post("/login", handlers.LoginUser)
 	authRoutes.Post("/logout", handlers.LogoutUser)

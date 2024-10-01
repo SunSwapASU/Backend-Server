@@ -14,4 +14,24 @@ model User {
     username  String
     email     String   @unique
     password  String
+    Items     Item[]
+}
+
+model Item {
+    id          String     @id @default(cuid())
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    owner       User       @relation(fields: [userId], references: [id])
+    userId      String
+    name        String
+    description String?
+    categories  Category[]
+    condition   String?
+}
+
+model Category {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    items     Item[]
 }

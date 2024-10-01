@@ -43,13 +43,34 @@ func Run() {
 
 	////////////////////////////////////////////////////////////////
 
+	authRoutes := s.Group("/auth")
 	privateRoutes := s.Group("/private", jwtCheck)
-	privateRoutes.Get("/browse", handlers.Browse)
+	creators := privateRoutes.Group("/create")
+	readers := privateRoutes.Group("/read")
+	updaters := privateRoutes.Group("/update")
+	deleters := privateRoutes.Group("/delete")
 
-	publicRoutes := s.Group("/")
-	publicRoutes.Post("/register", handlers.RegisterUser)
-	publicRoutes.Post("/login", handlers.LoginUser)
-	publicRoutes.Post("/logout", handlers.LogoutUser)
+	creators.Post("/item", handlers.CreateItem)
+	creators.Post("/category", handlers.CreateCategory)
+
+	readers.Get("/user", handlers.GetUser)
+	readers.Get("/users", handlers.GetAllUsers)
+	readers.Get("/item", handlers.GetItem)
+	readers.Get("/items", handlers.GetAllItems)
+	readers.Get("/category", handlers.GetCategory)
+	readers.Get("/categories", handlers.GetAllCategories)
+
+	updaters.Post("/user", handlers.UpdateUser)
+	updaters.Post("/item", handlers.UpdateItem)
+	updaters.Post("/category", handlers.UpdateCategory)
+
+	deleters.Delete("/user", handlers.DeleteUser)
+	deleters.Delete("/item", handlers.DeleteItem)
+	deleters.Delete("/category", handlers.DeleteCategory)
+
+	authRoutes.Post("/register", handlers.RegisterUser)
+	authRoutes.Post("/login", handlers.LoginUser)
+	authRoutes.Post("/logout", handlers.LogoutUser)
 
 	////////////////////////////////////////////////////////////////
 

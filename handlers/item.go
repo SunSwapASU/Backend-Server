@@ -34,7 +34,8 @@ func CreateItem(c *fiber.Ctx) error {
 	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Database could not create item",
+			// "message": "Database could not create item",
+			"error": err.Error(),
 		})
 	}
 
@@ -44,8 +45,7 @@ func CreateItem(c *fiber.Ctx) error {
 	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			// "message": "Database could not create category",
-			"error": err.Error(),
+			"message": "Database could not create category",
 		})
 	}
 
@@ -67,7 +67,9 @@ func CreateItem(c *fiber.Ctx) error {
 	).With(
 		db.Category.Items.Fetch(),
 	).Update(
-		db.Category.Items.Push(newItem),
+		db.Category.Items.Link(
+			db.Item.ID.Equals(newItem.ID),
+		),
 	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

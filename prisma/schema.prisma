@@ -27,7 +27,7 @@ model Item {
     name         String
     description  String?
     condition    String?
-    Category     Category? @relation(fields: [categoryName], references: [name])
+    category     Category? @relation(fields: [categoryName], references: [name])
     categoryName String?
 }
 

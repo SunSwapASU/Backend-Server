@@ -34,8 +34,7 @@ func CreateItem(c *fiber.Ctx) error {
 	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			// "message": "Database could not create item",
-			"error": err.Error(),
+			"message": "Database could not create item",
 		})
 	}
 

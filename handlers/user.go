@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/branogarbo/sunswap_backend/models"
 	"github.com/branogarbo/sunswap_backend/prisma"
+	"github.com/branogarbo/sunswap_backend/prisma/db"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -31,7 +32,9 @@ func GetUser(c *fiber.Ctx) error {
 }
 
 func GetAllUsers(c *fiber.Ctx) error {
-	users, err := prisma.Client.User.FindMany().Exec(prisma.Ctx)
+	users, err := prisma.Client.User.FindMany().With(
+		db.User.Items.Fetch(),
+	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Database threw error while finding users",

@@ -19,15 +19,16 @@ model User {
 }
 
 model Item {
-    id          String     @id @default(cuid())
-    createdAt   DateTime   @default(now())
-    updatedAt   DateTime   @updatedAt
-    owner       User       @relation(fields: [ownerId], references: [id])
-    ownerId     String
-    name        String
-    description String?
-    categories  Category[]
-    condition   String?
+    id           String    @id @default(cuid())
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    owner        User      @relation(fields: [ownerId], references: [id])
+    ownerId      String
+    name         String
+    description  String?
+    category     Category? @relation(fields: [categoryName], references: [name])
+    categoryName String?
+    condition    String?
 }
 
 model Category {
@@ -35,6 +36,6 @@ model Category {
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
     name        String   @unique
-    description String
+    description String?
     items       Item[]
 }

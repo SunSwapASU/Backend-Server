@@ -5,9 +5,9 @@ type CategoryCreate struct {
 }
 
 type ItemCreate struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Categories  []string `json:"categories"`
-	Condition   string   `json:"condition"`
-	Owner       string   `json:"owner"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	CategoryName string `json:"categoryName"`
+	Condition    string `json:"condition"`
+	Owner        string `json:"owner"`
 }

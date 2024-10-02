@@ -19,18 +19,14 @@ func CreateItem(c *fiber.Ctx) error {
 
 	ownerId := c.Locals("jwt").(*jwt.Token).Claims.(jwt.MapClaims)["userId"].(string)
 
-	// create item with no category
-	// if category does not exist, create category with no items
-	// update item to have categoryName
-	// update category to append item
-
-	newItem, err := prisma.Client.Item.CreateOne(
+	_, err := prisma.Client.Item.CreateOne(
 		db.Item.Owner.Link(
 			db.User.ID.Equals(ownerId),
 		),
 		db.Item.Name.Set(fields.Name),
 		db.Item.Condition.Set(fields.Condition),
 		db.Item.Description.Set(fields.Description),
+		db.Item.Categories.Set(fields.Categories),
 	).Exec(prisma.Ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

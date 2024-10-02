@@ -49,7 +49,6 @@ func Run() {
 
 	p.Route("/user", userRoutes)
 	p.Route("/item", itemRoutes)
-	p.Route("/category", categoryRoutes)
 
 	////////////////////////////////////////////////////////////////
 

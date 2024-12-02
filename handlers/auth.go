@@ -104,11 +104,18 @@ func LoginUser(c *fiber.Ctx) error {
 	}
 
 	JWTclaims := jwt.MapClaims{
-		"userId":   user.ID,
-		"username": user.Username,
-		"email":    user.Email,
-		"items":    string(itemsJSON),
-		"exp":      time.Now().Add(time.Hour * 72).Unix(),
+		"userId":           user.ID,
+		"username":         user.Username,
+		"email":            user.Email,
+		"items":            string(itemsJSON),
+		"firstName":        user.FirstName,
+		"lastName":         user.LastName,
+		"preferredContact": user.PreferredContact,
+		"campusNames":      user.CampusName,
+		"major":            user.Major,
+		"gradYear":         user.GradYear,
+		"bio":              user.Bio,
+		"exp":              time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTclaims)
@@ -117,6 +124,7 @@ func LoginUser(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Could not sign JWT",
+			"error":   err.Error(),
 		})
 	}
 
@@ -125,9 +133,7 @@ func LoginUser(c *fiber.Ctx) error {
 		Value: signedToken,
 	})
 
-	return c.JSON(fiber.Map{
-		"message": "User logged in successfully",
-	})
+	return c.JSON(JWTclaims)
 }
 
 func LogoutUser(c *fiber.Ctx) error {

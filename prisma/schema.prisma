@@ -8,14 +8,20 @@ generator db {
 }
 
 model User {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    username  String
-    email     String   @unique
-    password  String
-    items     Item[]
-    aboutMe   String?
+    id               String   @id @default(cuid())
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+    username         String   @unique
+    email            String   @unique
+    password         String
+    items            Item[]
+    firstName        String   @default("")
+    lastName         String   @default("")
+    preferredContact String   @default("")
+    campusName       String   @default("")
+    major            String   @default("")
+    gradYear         Int      @default(0)
+    bio              String   @default("")
 }
 
 model Item {
@@ -32,10 +38,9 @@ model Item {
 }
 
 model Category {
-    id          String   @id @default(cuid())
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    name        String   @unique
-    description String?
-    items       Item[]
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    name      String   @unique
+    items     Item[]
 }

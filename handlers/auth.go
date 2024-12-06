@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"net/mail"
 	"os"
 	"time"
 
@@ -23,18 +22,15 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 
-	if _, err := mail.ParseAddress(creds.Email); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Email address is not valid",
-		})
-	}
-
-	registeredUser, err := prisma.Client.User.FindUnique(
-		db.User.Email.Equals(creds.Email),
+	registeredUser, err := prisma.Client.User.FindFirst(
+		db.User.Or(
+			db.User.Username.Equals(creds.Username),
+			db.User.Email.Equals(creds.Email),
+		),
 	).Exec(prisma.Ctx)
 	if registeredUser != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "A user with this email address already exists",
+			"message": "A user with this username or email address already exists",
 		})
 	} else if err != nil && !errors.Is(err, db.ErrNotFound) {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

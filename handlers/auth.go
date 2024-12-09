@@ -45,7 +45,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = prisma.Client.User.CreateOne(
+	newUser, err := prisma.Client.User.CreateOne(
 		db.User.Username.Set(creds.Username),
 		db.User.Email.Set(creds.Email),
 		db.User.Password.Set(string(passwordHash)),
@@ -56,9 +56,37 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "User registered successfully",
+	JWTclaims := jwt.MapClaims{
+		"userId":           newUser.ID,
+		"username":         newUser.Username,
+		"email":            newUser.Email,
+		"items":            "",
+		"firstName":        newUser.FirstName,
+		"lastName":         newUser.LastName,
+		"preferredContact": newUser.PreferredContact,
+		"campusNames":      newUser.CampusName,
+		"major":            newUser.Major,
+		"gradYear":         newUser.GradYear,
+		"bio":              newUser.Bio,
+		"exp":              time.Now().Add(time.Hour * 72).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTclaims)
+
+	signedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not sign JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:  "token",
+		Value: signedToken,
 	})
+
+	return c.JSON(JWTclaims)
 }
 
 func LoginUser(c *fiber.Ctx) error {
@@ -141,4 +169,33 @@ func LogoutUser(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "User logged out successfully",
 	})
+}
+
+func ProfileSetup(c *fiber.Ctx) error {
+	var setup models.ProfileSetup
+
+	if err := c.BodyParser(&setup); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Request body parser threw error",
+		})
+	}
+
+	updatedUser, err := prisma.Client.User.FindUnique(
+		db.User.ID.Equals(setup.ID),
+	).Update(
+		db.User.FirstName.Set(setup.FirstName),
+		db.User.LastName.Set(setup.LastName),
+		db.User.PreferredContact.Set(setup.PreferredContact),
+		db.User.Major.Set(setup.Major),
+		db.User.CampusName.Set(setup.CampusName),
+		db.User.GradYear.Set(setup.GradYear),
+		db.User.Bio.Set(setup.Bio),
+	).Exec(prisma.Ctx)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Could not update user",
+		})
+	}
+
+	return c.JSON(updatedUser)
 }

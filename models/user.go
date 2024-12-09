@@ -7,12 +7,13 @@ type RegisterCreds struct {
 }
 
 type ProfileSetup struct {
+	ID               string `json:"id"`
 	FirstName        string `json:"first_name"`
 	LastName         string `json:"last_name"`
 	PreferredContact string `json:"preferred_contact"`
 	CampusName       string `json:"campus_name"`
 	Major            string `json:"major"`
-	GradYear         string `json:"grad_year"`
+	GradYear         int    `json:"grad_year"`
 	Bio              string `json:"bio"`
 }
 
